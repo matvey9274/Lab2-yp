@@ -1,0 +1,163 @@
+#include <iostream>
+#include <fstream>
+#include <windows.h>
+
+using namespace std;
+
+
+
+int main()
+{
+	setlocale( LC_ALL,"Russian" );
+	
+	int x; // переменная для считывания чисел
+
+	int m = 0; // переменная для количества строк
+	ifstream f1("B.txt"); // открываем файл B для подсчета количества строк
+	while(f1 >> x) m++; // считываем число, увеличиваем счетчик
+	f1.close(); // закрываем файл B
+
+	// выделяем память под вектор B
+	int *B;
+	B = new int[m];
+
+	ifstream fb("B.txt"); // открываем файл B для ввода данных
+	for(int i=0; i<m; i++)
+		fb >> B[i]; // считываем элементы вектора B
+	fb.close(); // закрываем файл B
+
+	int n = 0; // переменная для количества столбцов
+	ifstream f2("D.txt"); // открываем файл D для подсчета количества столбцов
+	while(f2 >> x) n++; // считываем число, увеличиваем счетчик
+	f2.close(); // закрываем файл D
+
+	// выделяем память под вектор D
+	int *D;
+	D = new int[n];
+
+	ifstream fd("D.txt"); // открываем файл D для ввода данных
+	for(int i=0; i<n; i++)
+		fd >> D[i]; // считываем элементы вектора D
+	fd.close(); // закрываем файл D
+
+	// выделяем память под матрицу A
+	int **A;
+	A = new int*[m];
+	for(int i=0; i<m; i++)
+		A[i] = new int[m];
+
+	ifstream fa("A.txt"); // открываем файл A для ввода данных
+	for(int i=0; i<m; i++)
+		for(int j=0; j<m; j++)
+			fa >> A[i][j]; // считываем элементы матрицы A
+	fa.close(); // закрываем файл A
+
+	// выделяем память под матрицу C
+	int **C;
+	C = new int*[n];
+	for(int i=0; i<n; i++)
+		C[i] = new int[m];
+
+	ifstream fc("C.txt"); // открываем файл C для ввода данных
+	for(int i=0; i<n; i++)
+		for(int j=0; j<m; j++)
+			fc >> C[i][j]; // считываем элементы матрицы С
+	fc.close(); // закрываем файл C
+
+	// выводим матрицу A в консоль
+	cout << "Матрица A:" << endl;
+	for(int i=0; i<m; i++){
+		for(int j=0; j<m; j++)
+			cout << A[i][j] << " ";
+		cout << endl;
+	}
+	cout << endl;
+
+	// выводим вектор B в консоль
+	cout << "Вектор B:" << endl;
+	for(int i=0; i<m; i++)
+		cout << B[i] << endl;
+	cout << endl;
+
+	// выводим матрицу C в консоль
+	cout << "Матрица C:" << endl;
+	for(int i=0; i<n; i++){
+		for(int j=0; j<m; j++)
+			cout << C[i][j] << " ";
+		cout << endl;
+	}
+	cout << endl;
+
+	// выводим вектор D в консоль
+	cout << "Вектор D:" << endl;
+	for(int i=0; i<n; i++)
+		cout << D[i] << " ";
+
+	cout << endl << endl;
+
+	// умножаем матрицу A на 5
+	for(int i=0; i<m; i++)
+		for(int j=0; j<m; j++)
+			A[i][j] = 5*A[i][j]; // каждый элемент матрицы A умножаем на 5
+
+	// выделяем память для матрицы, которая получится из умножения вектора B на вектор D
+	int **BD = new int*[m];
+	for(int i=0; i<m; i++)
+		BD[i] = new int[n];
+
+	// умножаем вектор B на вектор D
+	for(int i=0; i<m; i++)
+		for(int j=0; j<n; j++)
+			BD[i][j] = B[i]*D[j]; // каждый элемент матрицы BD является произведением i-го элемента вектора B и j-го элемента вектора D
+
+	// выделяем память для матрицы, которая получится из умножения произведения BD на матрицу C
+	int **BDC = new int*[m];
+	for(int i=0; i<m; i++)
+		BDC[i] = new int[m];
+
+	// умножаем матрицу BD на матрицу C
+	for(int i=0; i<m; i++){
+		for(int j=0; j<m; j++){
+			BDC[i][j] = 0; // каждый элемент новой матрицы изначально равен 0
+			for(int k=0; k<n; k++)
+				BDC[i][j] += BD[i][k]*C[k][j]; // затем к нему прибавляется каждое произведение
+												// k-го элемента строки i матрицы BD и k-го элемента столбца j матрицы C
+		}
+	}
+
+	// складываем матрицу получившуюся в результате предыдущих операций (BDC) с матрицей A
+	for(int i=0; i<m; i++)
+		for(int j=0; j<m; j++)
+			A[i][j] += BDC[i][j]; // к каждому элементу матрицы A прибавляем соответствующий элемент матрицы BDC
+
+	cout << "Результат: " << endl;
+
+	for(int i=0; i<m; i++){
+		for(int j=0; j<m; j++)
+			cout << A[i][j] << " ";
+		cout << endl;
+	}
+
+	// очищаем выделенную память
+	for(int i=0; i<m; i++)
+		delete [] BDC[i];
+	delete [] BDC;
+
+	for(int i=0; i<m; i++)
+		delete [] BD[i];
+	delete [] BD;
+
+	delete [] D;
+
+	for(int i=0; i<n; i++)
+		delete [] C[i];
+	delete [] C;
+
+	delete [] B;
+
+	for(int i=0; i<m; i++)
+		delete [] A[i];
+	delete [] A;
+
+	return 0;
+}
